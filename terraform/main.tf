@@ -2,9 +2,14 @@ provider "aws" {
   region = var.region
 }
 
-resource "aws_key_pair" "deployer" {
-  key_name   = var.key_name
-  public_key = file("${path.module}/ec2_key.pub")
+resource "tls_private_key" "example" {
+  algorithm = "RSA"
+  rsa_bits  = 4096
+}
+
+resource "aws_key_pair" "generated_key" {
+  key_name   = "my-key"
+  public_key = tls_private_key.example.public_key_openssh
 }
 
 resource "aws_security_group" "allow_ssh" {
@@ -36,7 +41,7 @@ resource "aws_security_group" "allow_ssh" {
 resource "aws_instance" "ec2_instance" {
   ami                         = "ami-0a87a69d69fa289be" # Ubuntu 22.04 în Frankfurt
   instance_type               = var.instance_type
-  key_name                    = aws_key_pair.deployer.key_name
+  key_name                    = aws_key_pair.generated_key.key_name
   vpc_security_group_ids      = [aws_security_group.allow_ssh.id]
 
   provisioner "remote-exec" {
