@@ -2,14 +2,14 @@ provider "aws" {
   region = var.region
 }
 
-resource "tls_private_key" "example" {
+resource "tls_private_key" "generated_key" {
   algorithm = "RSA"
   rsa_bits  = 4096
 }
 
 resource "aws_key_pair" "generated_key" {
   key_name   = "my-key"
-  public_key = tls_private_key.example.public_key_openssh
+  public_key = tls_private_key.generated_key.public_key_openssh
 }
 
 resource "aws_security_group" "allow_ssh" {
